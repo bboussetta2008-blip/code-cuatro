@@ -98,6 +98,17 @@ int main(void)
             afficher_aide();
             continue;
         }
+        if (strcmp(args[0], "osinfo") == 0)
+{
+    printf("Systèmes d’Exploitation -- UIR/ESIN\n");
+    continue;
+}
+
+if (strcmp(args[0], "past") == 0)
+{
+    printf("Historique non disponible pour le moment.\n");
+    continue;
+}
 
         remplacer_alias(args[0]);
 
