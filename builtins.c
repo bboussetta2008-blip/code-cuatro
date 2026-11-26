@@ -198,5 +198,18 @@ int gerer_redirections(char **args) {
         perror("ocsh: fork");
         return 1;
     }
-
+if (pid == 0) {
+        if (fichier_in != NULL) {
+            int fd_in = open(fichier_in, O_RDONLY);
+            if (fd_in < 0) {
+                perror("ocsh: open (<)");
+                exit(1);
+            }
+            if (dup2(fd_in, STDIN_FILENO) < 0) {
+                perror("ocsh: dup2 (<)");
+                close(fd_in);
+                exit(1);
+            }
+            close(fd_in);
+        }
    
