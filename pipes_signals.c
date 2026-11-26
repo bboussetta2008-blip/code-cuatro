@@ -134,4 +134,8 @@ int verifier_arriere_plan(char **args) {
         return 1;
     }
     return 0;
+    
 }
+
+
+
