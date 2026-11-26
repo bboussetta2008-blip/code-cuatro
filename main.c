@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #define MAX_LINE 1024
 #define MAX_ARGS 100
@@ -33,7 +34,38 @@ void remplacer_alias(char *commande)
     else if (strcmp(commande, "newfile") == 0)
         strcpy(commande, "touch");
 }
+void redirection(char *args[])
+{
+    int i = 0;
 
+    while (args[i] != NULL)
+    {
+        if (strcmp(args[i], ">") == 0)
+        {
+            if (args[i + 1] == NULL)
+            {
+                fprintf(stderr, "Erreur: fichier manquant\n");
+                return;
+            }
+
+            int fd = open(args[i + 1],
+                          O_WRONLY | O_CREAT | O_TRUNC, 0644);
+
+            if (fd < 0)
+            {
+                perror("open");
+                return;
+            }
+
+            dup2(fd, STDOUT_FILENO);
+            close(fd);
+
+            args[i] = NULL;
+            return;
+        }
+        i++;
+    }
+}
 int main(void)
 {
     char ligne[MAX_LINE];
@@ -98,6 +130,17 @@ int main(void)
             afficher_aide();
             continue;
         }
+        if (strcmp(args[0], "osinfo") == 0)
+{
+    printf("Systèmes d’Exploitation -- UIR/ESIN\n");
+    continue;
+}
+
+if (strcmp(args[0], "past") == 0)
+{
+    printf("Historique non disponible pour le moment.\n");
+    continue;
+}
 
         remplacer_alias(args[0]);
 
