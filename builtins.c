@@ -212,4 +212,27 @@ if (pid == 0) {
             }
             close(fd_in);
         }
+if (fichier_out != NULL) {
+            int flags = O_WRONLY | O_CREAT | (append_mode ? O_APPEND : O_TRUNC);
+            int fd_out = open(fichier_out, flags, 0644);
+            if (fd_out < 0) {
+                perror("ocsh: open (>/>>)");
+                exit(1);
+            }
+            if (dup2(fd_out, STDOUT_FILENO) < 0) {
+                perror("ocsh: dup2 (>/>>)");
+                close(fd_out);
+                exit(1);
+            }
+            close(fd_out);
+        }
+
+        execvp(cmd_args[0], cmd_args);
+        perror("ocsh: execvp");
+        exit(1);
+    }
+
+    wait(NULL);
+    return 1;
+}
    
