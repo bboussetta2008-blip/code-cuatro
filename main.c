@@ -9,6 +9,8 @@
 
 #define MAX_LINE 1024
 #define MAX_ARGS 100
+int dernier_status = 0;
+int dernier_background = 0;
 
 void afficher_aide(void)
 {
@@ -66,6 +68,42 @@ void redirection(char *args[])
         i++;
     }
 }
+void gestionnaire_sigint(int sig)
+{
+    (void)sig;
+    write(STDOUT_FILENO, "\n", 1);
+}
+
+void gestionnaire_sigchld(int sig)
+{
+    (void)sig;
+
+    while (waitpid(-1, NULL, WNOHANG) > 0)
+        ;
+}
+void remplacer_variables(char *args[])
+{
+    for (int i = 0; args[i] != NULL; i++)
+    {
+        if (strcmp(args[i], "$?") == 0)
+        {
+            char valeur[20];
+            sprintf(valeur, "%d", dernier_status);
+            args[i] = strdup(valeur);
+        }
+        else if (strcmp(args[i], "$!") == 0)
+        {
+            char valeur[20];
+            sprintf(valeur, "%d", dernier_background);
+            args[i] = strdup(valeur);
+        }
+        else if (args[i][0] == '$')
+        {
+            char *valeur = getenv(args[i] + 1);
+            args[i] = strdup(valeur ? valeur : "");
+        }
+    }
+}
 int main(void)
 {
     char ligne[MAX_LINE];
@@ -96,6 +134,7 @@ int main(void)
 
         if (args[0] == NULL)
             continue;
+        remplacer_variables(args);
 
         if (strcmp(args[0], "quit") == 0)
             break;
@@ -151,8 +190,33 @@ if (strcmp(args[0], "past") == 0)
     printf("Historique non disponible pour le moment.\n");
     continue;
 }
+if (strcmp(args[0], "export") == 0)
+{
+    if (args[1] != NULL)
+    {
+        char *egal = strchr(args[1], '=');
 
+        if (egal != NULL)
+        {
+            *egal = '\0';
+            setenv(args[1], egal + 1, 1);
+        }
+    }
+
+    continue;
+}
         remplacer_alias(args[0]);
+        int background = 0;
+int n = 0;
+
+while (args[n] != NULL)
+    n++;
+
+if (n > 0 && strcmp(args[n - 1], "&") == 0)
+{
+    background = 1;
+    args[n - 1] = NULL;
+}
 
         pid_t pid = fork();
 
@@ -165,9 +229,22 @@ if (strcmp(args[0], "past") == 0)
     perror(args[0]);
     exit(EXIT_FAILURE);
 }
-        else if (pid > 0)
-        {
-            wait(NULL);
+       else if (pid > 0)
+{
+    if (background)
+    {
+        dernier_background = pid;
+        printf("[%d]\n", pid);
+    }
+    else
+    {
+        int status;
+        waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status))
+            dernier_status = WEXITSTATUS(status);
+    }
+}
         }
         else
         {
