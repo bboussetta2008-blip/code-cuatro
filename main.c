@@ -104,6 +104,75 @@ void remplacer_variables(char *args[])
         }
     }
 }
+void executer_pipe(char *args[], int position)
+{
+    int tube[2];
+
+    if (pipe(tube) == -1)
+    {
+        perror("pipe");
+        return;
+    }
+
+    args[position] = NULL;
+
+    int position = -1;
+
+for (int j = 0; args[j] != NULL; j++)
+{
+    if (strcmp(args[j], "|") == 0)
+    {
+        position = j;
+        break;
+    }
+}
+
+if (position != -1)
+{
+    executer_pipe(args, position);
+    continue;
+}
+
+    pid_t pid1 = fork();
+
+    if (pid1 == 0)
+    {
+        dup2(tube[1], STDOUT_FILENO);
+
+        close(tube[0]);
+        close(tube[1]);
+
+        remplacer_alias(args[0]);
+
+        execvp(args[0], args);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+
+    pid_t pid2 = fork();
+
+    if (pid2 == 0)
+    {
+        dup2(tube[0], STDIN_FILENO);
+
+        close(tube[0]);
+        close(tube[1]);
+
+        char **commande2 = &args[position + 1];
+
+        remplacer_alias(commande2[0]);
+
+        execvp(commande2[0], commande2);
+        perror("execvp");
+        exit(EXIT_FAILURE);
+    }
+
+    close(tube[0]);
+    close(tube[1]);
+
+    waitpid(pid1, NULL, 0);
+    waitpid(pid2, NULL, 0);
+}
 int main(void)
 {
     char ligne[MAX_LINE];
