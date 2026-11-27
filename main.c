@@ -116,7 +116,7 @@ void executer_pipe(char *args[], int position)
 
     args[position] = NULL;
 
-    int position = -1;
+    
 
 for (int j = 0; args[j] != NULL; j++)
 {
@@ -201,8 +201,9 @@ int main(void)
         }
         args[i] = NULL;
 
-        if (args[0] == NULL)
-            continue;
+        if (args[0] == NULL) {
+    continue;
+}
         remplacer_variables(args);
 
         if (strcmp(args[0], "quit") == 0)
