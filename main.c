@@ -118,20 +118,7 @@ void executer_pipe(char *args[], int position)
 
     
 
-for (int j = 0; args[j] != NULL; j++)
-{
-    if (strcmp(args[j], "|") == 0)
-    {
-        position = j;
-        break;
-    }
-}
 
-if (position != -1)
-{
-    executer_pipe(args, position);
-    continue;
-}
 
     pid_t pid1 = fork();
 
@@ -275,6 +262,22 @@ if (strcmp(args[0], "export") == 0)
 
     continue;
 }
+        int position = -1;
+
+for (int j = 0; args[j] != NULL; j++)
+{
+    if (strcmp(args[j], "|") == 0)
+    {
+        position = j;
+        break;
+    }
+}
+
+if (position != -1)
+{
+    executer_pipe(args, position);
+    continue;
+}
         remplacer_alias(args[0]);
         int background = 0;
 int n = 0;
@@ -315,7 +318,7 @@ if (n > 0 && strcmp(args[n - 1], "&") == 0)
             dernier_status = WEXITSTATUS(status);
     }
 }
-        }
+        
         else
         {
             perror("fork");
