@@ -117,13 +117,23 @@ int main(void)
             continue;
         }
 
-        if (strcmp(args[0], "say") == 0)
-        {
-            for (int j = 1; args[j] != NULL; j++)
-                printf("%s ", args[j]);
-            printf("\n");
-            continue;
-        }
+       if (strcmp(args[0], "say") == 0)
+{
+    int sauvegarde = dup(STDOUT_FILENO);
+
+    redirection(args);
+
+    for (int j = 1; args[j] != NULL; j++)
+        printf("%s ", args[j]);
+
+    printf("\n");
+    fflush(stdout);
+
+    dup2(sauvegarde, STDOUT_FILENO);
+    close(sauvegarde);
+
+    continue;
+}
 
         if (strcmp(args[0], "info") == 0)
         {
