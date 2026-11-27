@@ -157,11 +157,14 @@ if (strcmp(args[0], "past") == 0)
         pid_t pid = fork();
 
         if (pid == 0)
-        {
-            execvp(args[0], args);
-            perror(args[0]);
-            exit(EXIT_FAILURE);
-        }
+{
+    redirection(args);
+
+    execvp(args[0], args);
+
+    perror(args[0]);
+    exit(EXIT_FAILURE);
+}
         else if (pid > 0)
         {
             wait(NULL);
